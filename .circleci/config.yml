@@ -1,160 +1,31 @@
-# Notes:
-# - Docker containers with R, etc. provided by rocker.  See <https://hub.docker.com/r/rocker/verse>.
-# - Builds attempted for 4.0.5, 4.2.3, and the *latest* R edition supported by rocker.
-
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/reference/configuration-reference
 version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/guides/orchestrate/jobs-steps/#jobs-overview & https://circleci.com/docs/reference/configuration-reference/#jobs
 jobs:
-  Build-for-r4_0_5:
+  say-hello:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/guides/execution-managed/executor-intro/ & https://circleci.com/docs/reference/configuration-reference/#executor-job
     docker:
-      - image: rocker/verse:4.0.5
+      # Specify the version you desire here
+      # See: https://circleci.com/developer/images/image/cimg/base
+      - image: cimg/base:current
 
+    # Add steps to the job
+    # See: https://circleci.com/docs/guides/orchestrate/jobs-steps/#steps-overview & https://circleci.com/docs/reference/configuration-reference/#steps
     steps:
+      # Checkout the code as the first step.
       - checkout
       - run:
-          name: Review checkout
-          command: ls -la
+          name: "Say hello"
+          command: "echo Hello, World!"
 
-      - run:
-          name: Install Linux dependencies
-          command: |
-            sudo apt-get update -y
-            sudo apt-get install -yq texlive-fonts-recommended
-            sudo apt-get install -yq texlive-fonts-extra
-
-      - run:
-          name: Install R dependencies
-          command: |
-            R -e 'install.packages("BiocManager")'
-            R -e 'BiocManager::install(c("limma"))'
-            R -e 'install.packages("covr")'
-            R -e 'install.packages("canvasXpress.data")'
-            R -e 'install.packages("DT")'
-
-      - run:
-          name: Session information and installed package versions
-          command: |
-            Rscript -e 'sessionInfo()'
-            Rscript -e 'installed.packages()[, c("Package", "Version")]'
-            Rscript -e 'rmarkdown::pandoc_version()'
-
-      - run:
-          name: Build package
-          command: R CMD build .
-
-      - run:
-          name: Check coverage
-          command: Rscript -e 'library(covr); codecov(quiet = FALSE)'
-
-      - run:
-          name: Check package
-          command: |
-            # Install suggested packages
-            R -e 'install.packages("png")'
-            # Perform package check
-            R CMD check *tar.gz
-
-  Build-for-r4_2_3:
-    docker:
-      - image: rocker/verse:4.0.5
-
-    steps:
-      - checkout
-      - run:
-          name: Review checkout
-          command: ls -la
-
-      - run:
-          name: Install Linux dependencies
-          command: |
-            sudo apt-get update -y
-            sudo apt-get install -yq texlive-fonts-recommended
-            sudo apt-get install -yq texlive-fonts-extra
-
-      - run:
-          name: Install R dependencies
-          command: |
-            R -e 'install.packages("BiocManager")'
-            R -e 'BiocManager::install(c("limma"))'
-            R -e 'install.packages("covr")'
-            R -e 'install.packages("canvasXpress.data")'
-            R -e 'install.packages("DT")'
-
-      - run:
-          name: Session information and installed package versions
-          command: |
-            Rscript -e 'sessionInfo()'
-            Rscript -e 'installed.packages()[, c("Package", "Version")]'
-            Rscript -e 'rmarkdown::pandoc_version()'
-
-      - run:
-          name: Build package
-          command: R CMD build .
-
-      - run:
-          name: Check coverage
-          command: Rscript -e 'library(covr); codecov(quiet = FALSE)'
-
-      - run:
-          name: Check package
-          command: |
-            # Install suggested packages
-            R -e 'install.packages("png")'
-            # Perform package check
-            R CMD check *tar.gz
-
-  Build-for-rLATEST:
-    docker:
-      - image: rocker/verse:latest
-
-    steps:
-      - checkout
-      - run:
-          name: Review checkout
-          command: ls -la
-
-      - run:
-          name: Install Linux dependencies
-          command: |
-            sudo apt-get update -y
-            sudo apt-get install -yq texlive-fonts-recommended
-            sudo apt-get install -yq texlive-fonts-extra
-
-      - run:
-          name: Install R dependencies
-          command: |
-            R -e 'install.packages("BiocManager")'
-            R -e 'BiocManager::install(c("limma"))'
-            R -e 'install.packages("covr")'
-            R -e 'install.packages("canvasXpress.data")'
-            R -e 'install.packages("DT")'
-
-      - run:
-          name: Session information and installed package versions
-          command: |
-            Rscript -e 'sessionInfo()'
-            Rscript -e 'installed.packages()[, c("Package", "Version")]'
-            Rscript -e 'rmarkdown::pandoc_version()'
-
-      - run:
-          name: Build package
-          command: R CMD build .
-
-      - run:
-          name: Check coverage
-          command: Rscript -e 'library(covr); codecov(quiet = FALSE)'
-
-      - run:
-          name: Check package
-          command: |
-            # Install suggested packages
-            R -e 'install.packages("png")'
-            # Perform package check
-            R CMD check *tar.gz
-
+# Orchestrate jobs using workflows
+# See: https://circleci.com/docs/guides/orchestrate/workflows/ & https://circleci.com/docs/reference/configuration-reference/#workflows
 workflows:
-  version: 2
-  Prepare-All-R-Editions:
+  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
+    # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - Build-for-r4_0_5
-      - Build-for-r4_2_3
-      - Build-for-rLATEST
+      - say-hello
